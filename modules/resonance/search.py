@@ -47,7 +47,7 @@ async def SearchBasic(self, message: Message):
     # 查询基础购入价格
     if len(params) == 3:
         id = GetItemId(params[2])
-        if isinstance(id, int) and items_buy.Datas[id]:
+        if id in items_buy.Datas:
             item = items_buy.Datas[id]
             city_name = "NULL"
             city = GetCityInfo(item["city"])
@@ -57,7 +57,7 @@ async def SearchBasic(self, message: Message):
                 content=f"查询道具基础购价：{item['name']}\n所属地点：{city_name}\n基础数量：{item['num']}\n基础购入价格：{item['price']}"
             )
         else:
-            c
+            _log.info(f"error:不存在道具 {id}")
     # 查询在所有城市的售价
     elif len(params) == 4 and (params[3] == "all" or params[3] == "ALL"):
         id = GetItemId(params[2])
@@ -66,13 +66,17 @@ async def SearchBasic(self, message: Message):
             city = GetCityInfo(items_buy.Datas[id]["city"])
             if city:
                 city_name = city["name"]
-            content = f"查询道具基础售价：{items_buy.Datas[id]['name']}\n所属地点：{city_name}\n"
+            belong = city_name
+            content = f"查询道具基础售价：{items_buy.Datas[id]['name']}\n所属地点：{city_name}\n基础购价：{items_buy.Datas[id]['price']}\n\n"
             for city_id in items_sell.Datas[id]:
                 city_name = "NULL"
                 city = GetCityInfo(city_id)
                 if city:
                     city_name = city["name"]
-                content = content + f"{city_name}  {items_sell.Datas[id][city_id]}\n"
+                if city_name != belong:
+                    content = (
+                        content + f"{city_name}  {items_sell.Datas[id][city_id]}\n"
+                    )
             await message.reply(content=content)
         else:
             _log.info(f"error:不存在道具 {id}")
