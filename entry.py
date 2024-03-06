@@ -7,6 +7,7 @@ from botpy.ext.cog_yaml import read
 from botpy.message import Message
 
 import modules.resonance.search
+import modules.resonance.report
 
 _log = logging.get_logger()
 
@@ -26,10 +27,8 @@ class MyClient(botpy.Client):
         # await modules.simple_reply.execute.Execute(self, message)
         if "/Search" in message.content:
             await modules.resonance.search.Search(self, message)
-        elif "/ReportSell" in message.content:
-            return
-        elif "/ReportBuy" in message.content:
-            return
+        elif "/Repor" in message.content:
+            await modules.resonance.report.Report(self, message)
         return
 
 
