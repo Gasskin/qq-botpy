@@ -34,6 +34,7 @@ class MyClient(botpy.Client):
             if message.author.id not in Interval:
                 Interval[message.author.id] = now
             elif Interval[message.author.id] - now <= 5:
+                Interval[message.author.id] = now
                 _log.info("发送消息过于频繁")
                 return
 
