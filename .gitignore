@@ -140,7 +140,6 @@ dmypy.json
 cython_debug/
 
 # botpy
-config.y*ml
 tests/.test.yaml
 botpy.log.*
 temp/
