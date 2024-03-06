@@ -54,29 +54,27 @@ async def SearchBasic(self, message: Message):
             if city:
                 city_name = city["name"]
             await message.reply(
-                content=f"查询道具：{item['name']}\n所属地点：{city_name}\n基础数量：{item['num']}\n基础购入价格：{item['price']}"
+                content=f"查询道具基础购价：{item['name']}\n所属地点：{city_name}\n基础数量：{item['num']}\n基础购入价格：{item['price']}"
             )
         else:
-            _log.info(f"error:不存在道具 {id}")
+            c
     # 查询在所有城市的售价
-    elif len(params) == 4 and params[3] == "all":
+    elif len(params) == 4 and (params[3] == "all" or params[3] == "ALL"):
         id = GetItemId(params[2])
-        if items_buy.Datas[id] and items_sell[id]:
-            content = (
-                f"查询道具：{items_buy.Datas[id]['name']}\n所属地点：{city_name}\n"
-            )
-            for city_id in items_sell[id]:
+        if id in items_buy.Datas and id in items_sell.Datas:
+            city_name = "NULL"
+            city = GetCityInfo(items_buy.Datas[id]["city"])
+            if city:
+                city_name = city["name"]
+            content = f"查询道具基础售价：{items_buy.Datas[id]['name']}\n所属地点：{city_name}\n"
+            for city_id in items_sell.Datas[id]:
                 city_name = "NULL"
                 city = GetCityInfo(city_id)
                 if city:
                     city_name = city["name"]
-                content = (
-                    content
-                    + f"售出城市：{city_name} 基础售价：{items_sell[id][city_id]}"
-                )
-                return
-
-            await message.reply(content)
-        return
+                content = content + f"{city_name}  {items_sell.Datas[id][city_id]}\n"
+            await message.reply(content=content)
+        else:
+            _log.info(f"error:不存在道具 {id}")
     else:
         _log.info("error:参数数量不匹配")
