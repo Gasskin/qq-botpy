@@ -12,7 +12,7 @@ Datas = {
         "key_name": "tmsz",
         "name": "铁盟哨站",
     },
-    "qhzyx": {
+    "7hzyg": {
         "id": 1003,
         "key_name": "qhzyx",
         "name": "7号自由港",

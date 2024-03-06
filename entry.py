@@ -1,6 +1,6 @@
 import asyncio
 import os
-
+from datetime import datetime
 import botpy
 from botpy import logging
 from botpy.ext.cog_yaml import read
@@ -8,11 +8,16 @@ from botpy.message import Message
 
 import modules.resonance.search
 import modules.resonance.report
+import modules.resonance.recommend
 
 _log = logging.get_logger()
 
 # 配置
 CONFIG = read(os.path.join(os.path.dirname(__file__), "config.yaml"))
+
+Interval = {}
+
+WhiteId = {"9631977870258360057": True}
 
 
 class MyClient(botpy.Client):
@@ -20,15 +25,26 @@ class MyClient(botpy.Client):
         _log.info(f"robot 「{self.robot.name}」 on_ready!")
 
     async def on_at_message_create(self, message: Message):
-        _log.info(f"\n发送人：{message.author.username}\n发送内容：{message.content}")
-        # await message.reply(content=f"机器人{self.robot.name}收到你的@消息了: {message.content}")
+        _log.info(
+            f"\n发送人：{message.author.username} {message.author.id}\n发送内容：{message.content}"
+        )
+
+        if message.author.id not in WhiteId:
+            now = datetime.timestamp(datetime.now())
+            if message.author.id not in Interval:
+                Interval[message.author.id] = now
+            elif Interval[message.author.id] - now <= 30:
+                _log.info("发送消息过于频繁")
+                return
+
         if message.content == "" or "/" not in message.content:
             return
-        # await modules.simple_reply.execute.Execute(self, message)
-        if "/Search" in message.content:
+        elif "/Search" in message.content:
             await modules.resonance.search.Search(self, message)
-        elif "/Repor" in message.content:
+        elif "/Report" in message.content:
             await modules.resonance.report.Report(self, message)
+        elif "/Recommend" in message.content:
+            return
         return
 
 

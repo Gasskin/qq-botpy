@@ -20,24 +20,21 @@ class ReportInfo(object):
     # 上报的城市
     city_info = None
     # 上报的市场百分比
-    percentage: str = ""
-    # 趋势
-    state: str = ""
+    percentage: float = 0.0
 
-    def __init__(self, item_id, city_info, percentage, state) -> None:
+    def __init__(self, item_id, city_info, percentage) -> None:
         self.item_id = item_id
         self.city_info = city_info
-        self.Refresh(percentage, state)
+        self.Refresh(percentage)
 
-    def Refresh(self, percentage, state):
+    def Refresh(self, percentage):
         self.report_time = datetime.timestamp(datetime.now())
         self.percentage = percentage
-        self.state = state
 
 
-BuyInfos: dict[int, ReportInfo] = {}
+BuyInfos: "dict[int, ReportInfo]" = {}
 
-SellInfos = {}
+SellInfos: "dict[int, dict[int, ReportInfo]]" = {}
 
 
 async def Report(self, message: Message):
@@ -50,20 +47,38 @@ async def Report(self, message: Message):
 
 async def ReportBuy(self, message: Message):
     params = message.content.split(" ")
-    if len(params) != 5:
+    count = len(params)
+    if count < 3:
         return
-    item_id = search.GetItemId(params[2])
-    city_info = search.GetItemCityInfo(item_id)
-    percentage = params[3]
-    state = params[4]
-    if not item_id or not city_info or not percentage:
-        return
-    if item_id not in BuyInfos:
-        BuyInfos[item_id] = ReportInfo(item_id, city_info, percentage, state)
-    else:
-        BuyInfos[item_id].Refresh(percentage, state)
-    return
+    for i in range(2, count):
+        infos = params[i].split(".")
+        item_id = search.GetItemId(infos[0])
+        city_info = search.GetItemCityInfo(item_id)
+        percentage = float(infos[1])
+        if not item_id or not city_info or not percentage:
+            return
+        if item_id not in BuyInfos:
+            BuyInfos[item_id] = ReportInfo(item_id, city_info, percentage)
+        else:
+            BuyInfos[item_id].Refresh(percentage)
 
 
 async def ReportSell(self, message: Message):
-    return
+    params = message.content.split(" ")
+    count = len(params)
+    if count < 4:
+        return
+    city_id = search.GetCityId(params[2])
+    for i in range(3, count):
+        infos = params[i].split(".")
+        item_id = search.GetItemId(infos[0])
+        city_info = search.GetItemCityInfo(item_id)
+        percentage = float(infos[1])
+        if not city_id or not item_id or not city_info or not percentage:
+            return
+        if item_id not in SellInfos:
+            SellInfos[item_id] = {}
+        if city_id not in SellInfos[item_id]:
+            SellInfos[item_id][city_id] = ReportInfo(item_id, city_info, percentage)
+        else:
+            SellInfos[item_id][city_id].Refresh(percentage)
