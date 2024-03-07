@@ -4,7 +4,7 @@ from modules.resonance import utils as r_utils
 from modules.resonance.configs import items
 from modules.resonance.configs import city
 from modules.resonance.commands.report_sell import SellInfos
-
+from modules.resonance.commands.report_buy import BuyInfos
 
 class GMR(BaseHandle):
     async def HandleMessage(self, message_info: MessageInfo):
@@ -43,19 +43,19 @@ class GMR(BaseHandle):
     # 当前的销售情况
     def Function_103(self, message_info: MessageInfo) -> str:
         try:
-            item_ids = r_utils.TryFindItemIDs(message_info.params[1])
-            if not item_ids:
-                return f"不存在该商品：{message_info.params[1]}"
-            content = f"{items.Datas[item_ids]['name']}\n"
-            if item_ids in SellInfos.reports:
-                for city_id in SellInfos.reports[item_ids]:
-                    sell_info = SellInfos.reports[item_ids][city_id]
-                    content = (
-                        content
-                        + f"{city.Datas[city_id]['name']} {sell_info.percentage}%{sell_info.GetValid()}"
-                    )
-                return content
-            return "没有该商品的销售信息"
+            content = "BuyInfo：\n"
+            for item_id in BuyInfos.reports:
+                for city_id in BuyInfos.reports[item_id]:
+                    info = BuyInfos.reports[item_id][city_id]
+                    if info.report_time!=0:
+                        content = content + f"{item_id} {city_id} {info.percentage} {info.GetValid()}\n"
+            content = content + "SellInfo：\n"
+            for item_id in SellInfos.reports:
+                for city_id in SellInfos.reports[item_id]:
+                    info = SellInfos.reports[item_id][city_id]
+                    if info.report_time!=0:
+                        content = content+f"{item_id} {city_id} {info.percentage} {info.GetValid()}\n"
+            return content
         except:
             return "GM 103 参数错误"
 

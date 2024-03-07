@@ -76,7 +76,7 @@ class RecommendSell(BaseHandle):
                 get_per_km = get_per_km + j.get_per_km
                 totoal_valid = totoal_valid + 2
                 valid = valid + j.from_valid + j.to_valid
-            content = content + f"to：{income[0].to_name} {get}/单 {get_per_km}/每单每公里 信息有效值：{round(valid/totoal_valid,1)}\n"
+            content = content + f"to：{income[0].to_name} {round(get,1)}/单 信息有效值：{round(valid/totoal_valid,1)}\n"
         return content
 
     def GetInCome(self,item_id:int,from_city:int,to_city:int)->InCome:
