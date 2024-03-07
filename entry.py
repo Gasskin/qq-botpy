@@ -1,23 +1,20 @@
-import asyncio
 import os
-from datetime import datetime
 import botpy
 from botpy import logging
 from botpy.ext.cog_yaml import read
-from botpy.message import Message
+from botpy.message import DirectMessage, Message
 
-import modules.resonance.search
-import modules.resonance.report
-import modules.resonance.recommend
+import modules.resonance
+from modules.message_info import MessageInfo
+from modules import utils as utils
 
 _log = logging.get_logger()
 
 # 配置
 CONFIG = read(os.path.join(os.path.dirname(__file__), "config.yaml"))
+INTERVAL = ";"
 
-Interval = {}
-
-WhiteId = {"9631977870258360057": True}
+Resonance = modules.resonance.Resonance()
 
 
 class MyClient(botpy.Client):
@@ -28,25 +25,37 @@ class MyClient(botpy.Client):
         _log.info(
             f"\n发送人：{message.author.username} {message.author.id}\n发送内容：{message.content}"
         )
+        if not message.content.endswith(INTERVAL):
+            return await message.reply(
+                content="测试连接成功",
+            )
+        message.content = message.content.replace(INTERVAL, "")
+        message_info = MessageInfo()
+        message_info.InitWithMessage(message)
 
-        if message.author.id not in WhiteId:
-            now = datetime.timestamp(datetime.now())
-            if message.author.id not in Interval:
-                Interval[message.author.id] = now
-            elif Interval[message.author.id] - now <= 5:
-                Interval[message.author.id] = now
-                _log.info("发送消息过于频繁")
-                return
+        if Resonance.FilterMeesage(message_info):
+            return await Resonance.HandleMessage(message_info)
+        return await message.reply(
+            content="没有能够执行该命令的模块",
+        )
 
-        if message.content == "" or "/" not in message.content:
-            return
-        elif "/Search" in message.content:
-            await modules.resonance.search.Search(self, message)
-        elif "/Report" in message.content:
-            await modules.resonance.report.Report(self, message)
-        elif "/Recommend" in message.content:
-            return
-        return
+    async def on_direct_message_create(self, message: DirectMessage):
+        _log.info(
+            f"\n[私聊]发送人：{message.author.username} {message.author.id}\n发送内容：{message.content}"
+        )
+        if not message.content.endswith(INTERVAL):
+            return await message.reply(
+                content="测试连接成功",
+            )
+        message.content = message.content.replace(INTERVAL, "")
+        message_info = MessageInfo()
+        message_info.InitWithDirectMessage(message)
+
+        if Resonance.FilterMeesage(message_info):
+            return await Resonance.HandleMessage(message_info)
+        return await message.reply(
+            content="没有能够执行该命令的模块",
+        )
 
 
 if __name__ == "__main__":
@@ -55,6 +64,7 @@ if __name__ == "__main__":
     # intents.public_guild_messages=True
 
     # 通过kwargs，设置需要监听的事件通道
-    intents = botpy.Intents(public_guild_messages=True)
+
+    intents = botpy.Intents(direct_message=True, public_guild_messages=True)
     client = MyClient(intents=intents)
     client.run(appid=CONFIG["appid"], secret=CONFIG["secret"])
