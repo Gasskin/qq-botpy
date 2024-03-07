@@ -47,7 +47,7 @@ class MyClient(botpy.Client):
             return await message.reply(
                 content="测试连接成功",
             )
-        message.content = message.content.replace(INTERVAL, "")
+        message.content = "empty " + message.content.replace(INTERVAL, "")
         message_info = MessageInfo()
         message_info.InitWithDirectMessage(message)
 

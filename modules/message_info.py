@@ -4,6 +4,7 @@ from modules import utils
 
 class MessageInfo(object):
     author_id: str  # 发送人ID
+    author_name: str  # 发送人名称
     content: str  # 发送内容
     command: str  # 发送指令
     params: list[str]  # 参数列表
@@ -15,6 +16,7 @@ class MessageInfo(object):
 
     def InitWithMessage(self, message: Message):
         self.author_id = message.author.id
+        self.author_name = message.author.username
         self.content = message.content
         self.message = message
         self.send_time = utils.GetCurrentSecondTimeStamp()
@@ -26,6 +28,7 @@ class MessageInfo(object):
 
     def InitWithDirectMessage(self, message: DirectMessage):
         self.author_id = message.author.id
+        self.author_name = message.author.username
         self.content = message.content
         self.message = message
         self.send_time = utils.GetCurrentSecondTimeStamp()
