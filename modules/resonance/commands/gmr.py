@@ -2,7 +2,8 @@ from modules.message_info import MessageInfo
 from modules.base_handle import BaseHandle
 from modules.resonance import utils as r_utils
 from modules.resonance.configs import items
-from modules.resonance.configs import citiy
+from modules.resonance.configs import city
+from modules.resonance.commands.report_sell import SellInfos
 
 
 class GMR(BaseHandle):
@@ -13,48 +14,61 @@ class GMR(BaseHandle):
             content = function(message_info)
         else:
             content = "参数错误"
-        await message_info.message.reply(
-            content=f"@{message_info.author_name}\n\n{content}"
-        )
+        await r_utils.Reply(message_info, content)
 
     # 检索道具表
     def Function_101(self, message_info: MessageInfo) -> str:
-        flag, id = r_utils.TryStr2Int(message_info.params[1])
-        # 说明输入的ID
-        if flag:
-            if id in items.Datas:
-                return str(items.Datas[id])
-        # 说明输入的是商品名字母缩写
-        elif r_utils.IsStrAllAlpha(id):
-            id = id.lower()
-            for item_id in items.Datas:
-                if items.Datas[item_id]["key"] == id:
-                    return str(items.Datas[item_id])
-        # 说明输入的是商品名
-        else:
-            for item_id in items.Datas:
-                if items.Datas[item_id]["name"] == id:
-                    return str(items.Datas[item_id])
-
-        return f"不存在商品：{message_info.params[1]}"
+        try:
+            item_ids = r_utils.TryFindItemIDs(message_info.params[1])
+            if item_ids:
+                str = ""
+                for key in item_ids:
+                    item_id = item_ids[key]
+                    str = str + "\n\n" + str(items.Datas[item_id])
+                return str
+            return f"不存在商品：{message_info.params[1]}"
+        except:
+            return "GM 101 参数错误"
 
     # 检索城市表
     def Function_102(self, message_info: MessageInfo) -> str:
-        flag, id = r_utils.TryStr2Int(message_info.params[1])
-        # 说明输入的ID
-        if flag:
-            if id in citiy.Datas:
-                return str(citiy.Datas[id])
-        # 说明输入的是城市名字母缩写
-        elif r_utils.IsStrAllAlpha(id):
-            id = id.lower()
-            for city_id in citiy.Datas:
-                if citiy.Datas[city_id]["key"] == id:
-                    return str(citiy.Datas[city_id])
-        # 说明输入的是城市名
-        else:
-            for city_id in citiy.Datas:
-                if citiy.Datas[city_id]["name"] == id:
-                    return str(citiy.Datas[city_id])
+        try:
+            city_id = r_utils.TryFindCityID(message_info.params[1])
+            if city_id:
+                return str(city.Datas[city_id])
+            return f"不存在城市：{message_info.params[1]}"
+        except:
+            return "GM 102 参数错误"
 
-        return f"不存在城市：{message_info.params[1]}"
+    # 当前的销售情况
+    def Function_103(self, message_info: MessageInfo) -> str:
+        try:
+            item_ids = r_utils.TryFindItemIDs(message_info.params[1])
+            if not item_ids:
+                return f"不存在该商品：{message_info.params[1]}"
+            content = f"{items.Datas[item_ids]['name']}\n"
+            if item_ids in SellInfos.reports:
+                for city_id in SellInfos.reports[item_ids]:
+                    sell_info = SellInfos.reports[item_ids][city_id]
+                    content = (
+                        content
+                        + f"{city.Datas[city_id]['name']} {sell_info.percentage}%{sell_info.GetValid()}"
+                    )
+                return content
+            return "没有该商品的销售信息"
+        except:
+            return "GM 103 参数错误"
+
+    def Function_SAVE(self, message_info: MessageInfo) -> str:
+        try:
+            r_utils.Save()
+            return "保存成功"
+        except:
+            return "GM SAVE 参数错误"
+
+    def Function_READ(self, message_info: MessageInfo) -> str:
+        try:
+            r_utils.Read()
+            return "读取成功"
+        except:
+            return "GM READ 参数错误"
