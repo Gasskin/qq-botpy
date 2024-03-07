@@ -2,17 +2,24 @@
 from botpy.message import Message
 from modules.message_info import MessageInfo
 from modules.base_handle import BaseHandle
-from modules.resonance.gmr import GMR
+from modules.resonance.commands.gmr import GMR
+from modules.resonance.commands.report_buy import ReportBuy
+from modules.resonance.commands.report_sell import ReportSell
+from modules.resonance.commands.search_buy import SearchBuy
+from modules.resonance.commands.recommend_sell import RecommendSell
 
 
 class Resonance(object):
-    HANDLES: dict[str, BaseHandle] = {
+    COMMANDS: dict[str, BaseHandle] = {
         "/GMR": GMR(),
-        "/Search": 1,
+        "/ReportBuy": ReportBuy(),
+        "/SearchBuy": SearchBuy(),
+        "/ReportSell": ReportSell(),
+        "/RecommendSell": RecommendSell(),
     }
 
     def FilterMeesage(self, message_info: MessageInfo) -> bool:
-        return message_info.command in self.HANDLES
+        return message_info.command in self.COMMANDS
 
     async def HandleMessage(self, message_info: MessageInfo):
-        await self.HANDLES[message_info.command].HandleMessage(message_info)
+        await self.COMMANDS[message_info.command].HandleMessage(message_info)
