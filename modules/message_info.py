@@ -7,7 +7,7 @@ class MessageInfo(object):
     author_name: str  # 发送人名称
     content: str  # 发送内容
     command: str  # 发送指令
-    params: list[str]  # 参数列表
+    params: "list[str]"  # 参数列表
     send_time: float  # 发送时间
     message: Message  # 消息
 

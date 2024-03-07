@@ -19,18 +19,28 @@ class ReportInfo(object):
         else:
             valid = "(失效)"
         return valid
+    
+    def GetValidValue(self) -> str:
+        now = g_utils.GetCurrentSecondTimeStamp()
+        if now - self.report_time < 600:
+            valid = 1
+        elif now - self.report_time < 3600:
+            valid = 0.5
+        else:
+            valid = 0
+        return valid
 
 
 class ReportInfos(object):
     # 商品/城市/上报信息
-    reports: dict[int, dict[int, ReportInfo]] = {}
+    reports: "dict[int, dict[int, ReportInfo]]"
 
     def __init__(self) -> None:
-        pass
+        self.reports = {}
+        return
 
-    def Refresh(
-        self, item_id: int, city_id: int, percentage: float, report_time: float
-    ):
+    def Refresh(self, item_id: int, city_id: int, percentage: float,
+                report_time: float):
         if item_id not in self.reports:
             self.reports[item_id] = {}
         if city_id not in self.reports[item_id]:

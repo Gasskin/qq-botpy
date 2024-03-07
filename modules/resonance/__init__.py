@@ -10,7 +10,7 @@ from modules.resonance.commands.recommend_sell import RecommendSell
 
 
 class Resonance(object):
-    COMMANDS: dict[str, BaseHandle] = {
+    COMMANDS: "dict[str, BaseHandle]" = {
         "/GMR": GMR(),
         "/ReportBuy": ReportBuy(),
         "/SearchBuy": SearchBuy(),
