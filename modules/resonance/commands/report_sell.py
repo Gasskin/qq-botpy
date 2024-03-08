@@ -30,6 +30,7 @@ class ReportSell(BaseHandle):
                     continue
                 percentage = float(params[1])
                 if percentage < 80 or percentage > 130:
+                    _log.warning(f"{m.author_name} {m.command} 输入百分比异常")
                     continue
                 for i in item_ids:
                     SellInfos.Refresh(i, city_id, percentage, g_utils.GetCurrentSecondTimeStamp())
