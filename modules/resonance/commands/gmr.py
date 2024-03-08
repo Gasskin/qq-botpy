@@ -27,24 +27,31 @@ class GMR(BaseHandle):
     # 检索道具表
     def Function_101(self, m: MessageInfo) -> str:
         try:
-            item_ids = r_utils.TryFindItemIDs(m.params[1])
-            if item_ids:
-                str = ""
-                for key in item_ids:
-                    item_id = item_ids[key]
-                    str = str + "\n\n" + str(items.Datas[item_id])
-                return str
-            return f"不存在商品：{m.params[1]}"
+            if m.params[1].endswith("*"):
+                name = m.params[1].replace("*", "")
+                item_ids = r_utils.FindItemIDsByFullSearch(name)
+            else:
+                item_ids = r_utils.FindItemIDs(m.params[1])
+            if not item_ids:
+                return f"不存在商品：{m.params[1]}"
+            if not r_utils.CheckItemAllSame(item_ids):
+                return f"{m.params[1]} 存在多个匹配项"
+            str = ""
+            for item_id in item_ids:
+                str = str + "\n\n" + str(items.Datas[item_id])
+            return str
         except:
             return "GM 101 参数错误"
 
     # 检索城市表
     def Function_102(self, m: MessageInfo) -> str:
         try:
-            city_id = r_utils.TryFindCityID(m.params[1])
-            if city_id:
-                return str(city.Datas[city_id])
-            return f"不存在城市：{m.params[1]}"
+            city_ids = r_utils.TryFindCityIDs(m.params[1])
+            if not city_ids:
+                return f"不存在城市：{m.params[1]}"
+            if len(city_ids) > 1:
+                return f"{m.params[1]} 存在多个匹配项"
+            return str(city.Datas[city_ids[0]])
         except:
             return "GM 102 参数错误"
 

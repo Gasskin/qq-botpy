@@ -16,11 +16,18 @@ _log = logging.get_logger()
 
 class SearchBuy(BaseHandle):
     # 商品
+    # 如果商品以*结尾说明要全名匹配
     async def HandleMessage(self, m: MessageInfo):
         try:
-            item_ids = r_utils.TryFindItemIDs(m.params[0])
+            if m.params[0].endswith("*"):
+                name = m.params[0].replace("*", "")
+                item_ids = r_utils.FindItemIDsByFullSearch(name)
+            else:
+                item_ids = r_utils.FindItemIDs(m.params[0])
             if not item_ids:
                 return await r_utils.Reply(m, f"不存在商品：{m.params[0]}")
+            if not r_utils.CheckItemAllSame(item_ids):
+                return await r_utils.Reply(m, f"{m.params[0]} 存在多个匹配项")
             content = f"目标商品：{items.Datas[item_ids[0]]['name']}\n"
             for item_id in item_ids:
                 content = content + "\n" + self.GetBuyInfoContent(item_id)

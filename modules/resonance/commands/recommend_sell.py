@@ -31,29 +31,29 @@ class RecommendSell(BaseHandle):
     # 城市 商品A 商品B
     async def HandleMessage(self, m: MessageInfo):
         try:
-            city_id = r_utils.TryFindCityID(m.params[0])
-            if not city_id:
+            city_ids = r_utils.TryFindCityIDs(m.params[0])
+            if not city_ids:
                 return await r_utils.Reply(m, f"不存在城市：{m.params[0]}")
-            target = []
+            if len(city_ids) > 1:
+                return await r_utils.Reply(m, f"{m.params[0]} 存在多个匹配项")
+            city_id = city_ids[0]
+            target_items = []
             for i in range(1, len(m.params)):
-                item_ids = r_utils.TryFindItemIDs(m.params[i])
-                if not item_ids:
-                    return await r_utils.Reply(m, f"不存在商品：{m.params[i]}")
-                item_id = r_utils.GetOnlyItemIDWithCityID(item_ids, city_id)
+                item_id = r_utils.FindOnlyItemWithCityID(m.params[i], city_id)
                 if not item_id:
                     return await r_utils.Reply(m, f"商品：{m.params[i]} 不属于城市{m.params[0]}")
-                target.append(item_id)
+                target_items.append(item_id)
 
             total_income: "list[list[InCome]]" = []
             for i in CityData:
                 if i == city_id:
                     continue
                 income: "list[InCome]" = []
-                for j in target:
+                for j in target_items:
                     income.append(self.GetInCome(j, city_id, i))
                 total_income.append(income)
             name = ""
-            for i in target:
+            for i in target_items:
                 name = name + ItemData[i]["name"] + " +"
             total_income.sort(key=self.SrotInCome, reverse=True)
             return await r_utils.Reply(m, f"{name} {self.GetContent(total_income)}")
