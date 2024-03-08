@@ -3,12 +3,21 @@ from modules.resonance import utils as r_utils
 
 
 class ReportInfo(object):
+    pre_report_time: float = 0.0  # 上一次上报的时间
+    pre_percentage: float = 100.0  # 上一次上报的百分比
     report_time: float = 0.0  # 上报时间
     percentage: float = 100.0  # 百分比
 
     def Refresh(self, percentage: float, report_time: float) -> None:
+        self.pre_report_time = self.report_time
+        self.pre_percentage = self.percentage
+
         self.percentage = percentage
         self.report_time = report_time
+
+    def Back(self):
+        self.percentage = self.pre_percentage
+        self.report_time = self.pre_report_time
 
     def GetValid(self) -> str:
         now = g_utils.GetCurrentSecondTimeStamp()
@@ -19,7 +28,7 @@ class ReportInfo(object):
         else:
             valid = "(失效)"
         return valid
-    
+
     def GetValidValue(self) -> str:
         now = g_utils.GetCurrentSecondTimeStamp()
         if now - self.report_time < 600:
@@ -39,8 +48,7 @@ class ReportInfos(object):
         self.reports = {}
         return
 
-    def Refresh(self, item_id: int, city_id: int, percentage: float,
-                report_time: float):
+    def Refresh(self, item_id: int, city_id: int, percentage: float, report_time: float):
         if item_id not in self.reports:
             self.reports[item_id] = {}
         if city_id not in self.reports[item_id]:

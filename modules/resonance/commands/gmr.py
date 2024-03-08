@@ -5,50 +5,51 @@ from modules.resonance.configs import items
 from modules.resonance.configs import city
 from modules.resonance.commands.report_sell import SellInfos
 from modules.resonance.commands.report_buy import BuyInfos
+from modules.resonance.report_info import ReportInfos
 
 
 class GMR(BaseHandle):
     WHITE_ID: dict[str, bool] = {"9631977870258360057": True, "0": False}
 
-    async def HandleMessage(self, message_info: MessageInfo):
-        if message_info.author_id not in self.WHITE_ID:
+    async def HandleMessage(self, m: MessageInfo):
+        if m.author_id not in self.WHITE_ID:
             return
-        if not self.WHITE_ID[message_info.author_id]:
+        if not self.WHITE_ID[m.author_id]:
             return
-        function_name = "Function_" + message_info.params[0]
+        function_name = "Function_" + m.params[0]
         function = getattr(self, function_name)
         if function:
-            content = function(message_info)
+            content = function(m)
         else:
             content = "参数错误"
-        await r_utils.Reply(message_info, content)
+        await r_utils.Reply(m, content)
 
     # 检索道具表
-    def Function_101(self, message_info: MessageInfo) -> str:
+    def Function_101(self, m: MessageInfo) -> str:
         try:
-            item_ids = r_utils.TryFindItemIDs(message_info.params[1])
+            item_ids = r_utils.TryFindItemIDs(m.params[1])
             if item_ids:
                 str = ""
                 for key in item_ids:
                     item_id = item_ids[key]
                     str = str + "\n\n" + str(items.Datas[item_id])
                 return str
-            return f"不存在商品：{message_info.params[1]}"
+            return f"不存在商品：{m.params[1]}"
         except:
             return "GM 101 参数错误"
 
     # 检索城市表
-    def Function_102(self, message_info: MessageInfo) -> str:
+    def Function_102(self, m: MessageInfo) -> str:
         try:
-            city_id = r_utils.TryFindCityID(message_info.params[1])
+            city_id = r_utils.TryFindCityID(m.params[1])
             if city_id:
                 return str(city.Datas[city_id])
-            return f"不存在城市：{message_info.params[1]}"
+            return f"不存在城市：{m.params[1]}"
         except:
             return "GM 102 参数错误"
 
     # 当前的销售情况
-    def Function_103(self, message_info: MessageInfo) -> str:
+    def Function_103(self, m: MessageInfo) -> str:
         try:
             content = "BuyInfo：\n"
             for item_id in BuyInfos.reports:
@@ -66,14 +67,33 @@ class GMR(BaseHandle):
         except:
             return "GM 103 参数错误"
 
-    def Function_SAVE(self, message_info: MessageInfo) -> str:
+    # 撤回上报 买入/卖出 商品 城市
+    def Function_104(self, m: MessageInfo) -> str:
+        try:
+            info: ReportInfos = None
+            if m.params[0] == "1":
+                info = BuyInfos
+            elif m.params[0] == "0":
+                info = SellInfos
+            else:
+                return "GM 104 参数错误"
+            item_id = int(m.params[1])
+            city_id = int(m.params[2])
+            if item_id in info.reports and city_id in info.reports[item_id]:
+                info.reports[item_id][city_id].Back()
+                return "撤回成功"
+            return "不存在商品信息"
+        except:
+            return "GM 104 参数错误"
+
+    def Function_SAVE(self, m: MessageInfo) -> str:
         try:
             r_utils.Save()
             return "保存成功"
         except:
             return "GM SAVE 参数错误"
 
-    def Function_READ(self, message_info: MessageInfo) -> str:
+    def Function_READ(self, m: MessageInfo) -> str:
         try:
             r_utils.Read()
             return "读取成功"
