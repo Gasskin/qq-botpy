@@ -71,14 +71,14 @@ class GMR(BaseHandle):
     def Function_104(self, m: MessageInfo) -> str:
         try:
             info: ReportInfos = None
-            if m.params[0] == "1":
+            if m.params[1] == "1":
                 info = BuyInfos
-            elif m.params[0] == "0":
+            elif m.params[1] == "0":
                 info = SellInfos
             else:
                 return "GM 104 参数错误"
-            item_id = int(m.params[1])
-            city_id = int(m.params[2])
+            item_id = int(m.params[2])
+            city_id = int(m.params[3])
             if item_id in info.reports and city_id in info.reports[item_id]:
                 info.reports[item_id][city_id].Back()
                 return "撤回成功"
