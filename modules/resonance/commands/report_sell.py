@@ -36,5 +36,4 @@ class ReportSell(BaseHandle):
             await r_utils.Reply(m, f"上报成功\n{content}")
         except Exception as e:
             _log.error(traceback.format_exc())
-            _log.error(e)
             await r_utils.Reply(m, "参数错误")

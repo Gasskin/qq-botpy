@@ -59,7 +59,6 @@ class RecommendSell(BaseHandle):
             return await r_utils.Reply(m, f"{name} {self.GetContent(total_income)}")
         except Exception as e:
             _log.error(traceback.format_exc())
-            _log.error(e)
             await r_utils.Reply(m, "参数错误")
 
     def SrotInCome(self, income: "list[InCome]") -> float:

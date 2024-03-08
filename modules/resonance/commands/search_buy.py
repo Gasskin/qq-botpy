@@ -27,7 +27,6 @@ class SearchBuy(BaseHandle):
             await r_utils.Reply(m, content)
         except Exception as e:
             _log.error(traceback.format_exc())
-            _log.error(e)
             await r_utils.Reply(m, "参数错误")
 
     def GetBuyInfoContent(self, item_id) -> str:
