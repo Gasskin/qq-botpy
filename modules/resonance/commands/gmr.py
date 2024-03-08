@@ -6,8 +6,15 @@ from modules.resonance.configs import city
 from modules.resonance.commands.report_sell import SellInfos
 from modules.resonance.commands.report_buy import BuyInfos
 
+
 class GMR(BaseHandle):
+    WHITE_ID: dict[str, bool] = {"9631977870258360057": True, "0": False}
+
     async def HandleMessage(self, message_info: MessageInfo):
+        if message_info.author_id not in self.WHITE_ID:
+            return
+        if not self.WHITE_ID[message_info.author_id]:
+            return
         function_name = "Function_" + message_info.params[0]
         function = getattr(self, function_name)
         if function:
@@ -47,14 +54,14 @@ class GMR(BaseHandle):
             for item_id in BuyInfos.reports:
                 for city_id in BuyInfos.reports[item_id]:
                     info = BuyInfos.reports[item_id][city_id]
-                    if info.report_time!=0:
+                    if info.report_time != 0:
                         content = content + f"{item_id} {city_id} {info.percentage} {info.GetValid()}\n"
             content = content + "SellInfo：\n"
             for item_id in SellInfos.reports:
                 for city_id in SellInfos.reports[item_id]:
                     info = SellInfos.reports[item_id][city_id]
-                    if info.report_time!=0:
-                        content = content+f"{item_id} {city_id} {info.percentage} {info.GetValid()}\n"
+                    if info.report_time != 0:
+                        content = content + f"{item_id} {city_id} {info.percentage} {info.GetValid()}\n"
             return content
         except:
             return "GM 103 参数错误"

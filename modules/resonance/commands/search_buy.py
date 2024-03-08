@@ -21,13 +21,9 @@ class SearchBuy(BaseHandle):
             item_ids = r_utils.TryFindItemIDs(m.params[0])
             if not item_ids:
                 return await r_utils.Reply(m, f"不存在商品：{m.params[0]}")
-            if isinstance(item_ids, int):
-                content = f"目标商品：{items.Datas[item_ids]['name']}\n"
-                content = content + self.GetBuyInfoContent(item_ids)
-            else:
-                content = f"目标商品：{items.Datas[item_ids[0]]['name']}"
-                for item_id in item_ids:
-                    content = content + "\n" + self.GetBuyInfoContent(item_id)
+            content = f"目标商品：{items.Datas[item_ids[0]]['name']}\n"
+            for item_id in item_ids:
+                content = content + "\n" + self.GetBuyInfoContent(item_id)
             await r_utils.Reply(m, content)
         except Exception as e:
             _log.error(traceback.format_exc())

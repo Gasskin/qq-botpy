@@ -29,13 +29,8 @@ class ReportSell(BaseHandle):
                     content = content + f"不存在商品：{params[0]}"
                     continue
                 percentage = float(params[1])
-                #如果存在重复商品，一起上报
-                if isinstance(item_ids,list):
-                    for i in item_ids:
-                        SellInfos.Refresh(i, city_id, percentage, g_utils.GetCurrentSecondTimeStamp())
-                else:
-                    item_id = item_ids
-                    SellInfos.Refresh(item_id, city_id, percentage, g_utils.GetCurrentSecondTimeStamp())
+                for i in item_ids:
+                    SellInfos.Refresh(i, city_id, percentage, g_utils.GetCurrentSecondTimeStamp())
             await r_utils.Reply(m, f"上报成功\n{content}")
         except Exception as e:
             _log.error(traceback.format_exc())

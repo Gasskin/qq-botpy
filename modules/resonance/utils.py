@@ -5,60 +5,31 @@ from modules.resonance.commands.report_buy import BuyInfos
 from modules.resonance.commands.report_sell import SellInfos
 
 
-# 检测字符串是不是全是英文字母
-def IsStrAllAlpha(str: str) -> bool:
-    return str.encode().isalpha()
-
-
-# 尝试把str转为int，如果失败了返回字符串自身
-def TryStr2Int(str: str):
-    try:
-        res = int(str)
-        return True, res
-    except:
-        return False, str
-
 # 通过ItemID和CityID得到唯一的Item
-def GetOnlyItemIDWithCityID(item_ids,city_id:int):
-    if isinstance(item_ids,int):
-        if ItemData[item_ids]["city"]==city_id:
-            return item_ids
-        else:
-            return None
-    else:
-        for i in item_ids:
-            if ItemData[i]['city']==city_id:
-                return i
+def GetOnlyItemIDWithCityID(item_ids: list[str], city_id: str):
+    for i in item_ids:
+        if ItemData[i]["city"] == city_id:
+            return i
     return None
+
 
 # 回复
 async def Reply(message_info: MessageInfo, content: str):
-    await message_info.message.reply(
-        content=f"@{message_info.author_name}\n\n{content}"
-    )
+    await message_info.message.reply(content=f"@{message_info.author_name}\n\n{content}")
 
 
 # 查找商品ID，可能有多个
-def TryFindItemIDs(item_str: str):
-    flag, id = TryStr2Int(item_str)
+def TryFindItemIDs(name: str) -> list[str]:
+    out = []
     # 说明输入的ID
-    if flag:
-        if id in ItemData:
-            return id
-    # 说明输入的是商品名字母缩写
-    elif IsStrAllAlpha(id):
-        out = []
-        id = id.lower()
-        for item_id in ItemData:
-            if ItemData[item_id]["key"] == id:
-                out.append(item_id)
-        if len(out) > 0:
-            return out
-    # 说明输入的是商品名
+    if name in ItemData:
+        out.append(name)
+        return name
+    # 说明输入的是商品名字母缩写或商品名
     else:
-        out = []
+        name = name.lower()
         for item_id in ItemData:
-            if ItemData[item_id]["name"] == id:
+            if ItemData[item_id]["name"] == name or ItemData[item_id]["key"] == name:
                 out.append(item_id)
         if len(out) > 0:
             return out
@@ -66,22 +37,15 @@ def TryFindItemIDs(item_str: str):
 
 
 # 查找城市ID，不会重复
-def TryFindCityID(city_str: str):
-    flag, id = TryStr2Int(city_str)
+def TryFindCityID(name: str):
     # 说明输入的ID
-    if flag:
-        if id in CityData:
-            return id
-    # 说明输入的是城市名字母缩写
-    elif IsStrAllAlpha(id):
-        id = id.lower()
-        for city_id in CityData:
-            if CityData[city_id]["key"] == id:
-                return city_id
-    # 说明输入的是城市名
+    if name in CityData:
+        return name
+    # 说明输入的是城市名字母缩写或者城市名
     else:
+        name = name.lower()
         for city_id in CityData:
-            if CityData[city_id]["name"] == id:
+            if CityData[city_id]["name"] == name or CityData[city_id]["key"] == name:
                 return city_id
     return None
 
@@ -91,11 +55,15 @@ def Save():
         for item_id in BuyInfos.reports:
             for city_id in BuyInfos.reports[item_id]:
                 info = BuyInfos.reports[item_id][city_id]
+                if info.report_time == 0:
+                    continue
                 f.write(f"{item_id} {city_id} {info.percentage} {info.report_time}\n")
     with open("save_sell.txt", "w") as f:
         for item_id in SellInfos.reports:
             for city_id in SellInfos.reports[item_id]:
                 info = SellInfos.reports[item_id][city_id]
+                if info.report_time == 0:
+                    continue
                 f.write(f"{item_id} {city_id} {info.percentage} {info.report_time}\n")
 
 

@@ -79,7 +79,7 @@ class RecommendSell(BaseHandle):
                 get_per_km = get_per_km + j.get_per_km
                 totoal_valid = totoal_valid + 2
                 valid = valid + j.from_valid + j.to_valid
-            content = content + f"to：{income[0].to_name} {round(get,1)}/单 信息有效值：{round(valid/totoal_valid,1)}\n"
+            content = content + f"to：{income[0].to_name} {round(get,1)}/个 信息有效值：{round(valid/totoal_valid,2)}\n"
         return content
 
     def GetInCome(self, item_id: int, from_city: int, to_city: int) -> InCome:
@@ -87,7 +87,7 @@ class RecommendSell(BaseHandle):
         from_buy_info = BuyInfos.GetAndAddDefaultIfNone(item_id, from_city)
         # 卖出地的销售信息
         to_sell_info = SellInfos.GetAndAddDefaultIfNone(item_id, to_city)
-        # 基础购入价格
+        # 基础购入价格/
         from_base_price = ItemData[item_id]["buy_price"]
         # 基础售出价格
         to_base_price = ItemData[item_id]["sell_price"][to_city]
@@ -99,8 +99,8 @@ class RecommendSell(BaseHandle):
         from_price = from_base_price * (from_buy_info.percentage / 100.0)
         to_price = to_base_price * (to_sell_info.percentage / 100.0)
 
-        get = round((to_price - from_price) * num, 1)
-        get_per_km = round(get / distance, 1)
+        get = to_price - from_price
+        get_per_km = get / distance
         from_name = CityData[from_city]["name"]
         to_name = CityData[to_city]["name"]
 
