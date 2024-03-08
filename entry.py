@@ -19,18 +19,18 @@ Resonance = modules.resonance.Resonance()
 
 class MyClient(botpy.Client):
     REPLY = {
-        "/GMR": "你好1",
-        "/ReportBuy": "你好2",
-        "/SearchBuy": "你好3",
-        "/ReportSell": "你好4",
-        "/RecommendSell": "你好5",
+        "/GMR": "连接机器人成功",
+        "/ReportBuy": "上报成功！",
+        "/SearchBuy": "没有查到相关信息~",
+        "/ReportSell": "上报成功！",
+        "/RecommendSell": "暂时没有路线推荐~",
     }
 
     async def on_ready(self):
         _log.info(f"robot 「{self.robot.name}」 on_ready!")
 
     async def on_at_message_create(self, message: Message):
-        _log.info(f"\n发送人：{message.author.username} {message.author.id}\n发送内容：{message.content}")
+        _log.info(f"\n发送人：{message.author.username} {message.author.id} {message.timestamp}\n发送内容：{message.content}")
         if not message.content.endswith(INTERVAL):
             for key in self.REPLY:
                 if key in message.content:

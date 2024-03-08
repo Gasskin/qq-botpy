@@ -15,8 +15,9 @@ _log = logging.get_logger()
 
 # 收益
 class InCome(object):
-    get: float  # 每单收入
-    get_per_km: float  # 每单每公里收入
+    get: float  # 每个收入
+    get_all: float  # 每单收入
+    distance: float  # 距离
     from_name: str  # 购入地名称
     to_name: str  # 销售地名称
     from_valid: float  # 购入地信息有效值
@@ -71,15 +72,25 @@ class RecommendSell(BaseHandle):
         content = f"from：{total_income[0][0].from_name}\n"
         for income in total_income:
             get = 0
-            get_per_km = 0
             valid = 0
             totoal_valid = 0
             for j in income:
-                get = get + j.get
-                get_per_km = get_per_km + j.get_per_km
+                get = get + j.get_all
                 totoal_valid = totoal_valid + 2
                 valid = valid + j.from_valid + j.to_valid
-            content = content + f"to：{income[0].to_name} {round(get,1)}/个 信息有效值：{round(valid/totoal_valid,2)}\n"
+
+            true_valid = valid / totoal_valid
+            if true_valid > 0.85:
+                valid_key = "十分有效"
+            elif true_valid > 0.5:
+                valid_key = "大概有效"
+            elif true_valid > 0.25:
+                valid_key = "勉强有效"
+            elif true_valid > 0:
+                valid_key = "几乎无效"
+            else:
+                valid_key = "无效"
+            content = content + f"to：{income[0].to_name} {round(get,2)}/单 ({valid_key})\n"
         return content
 
     def GetInCome(self, item_id: int, from_city: int, to_city: int) -> InCome:
@@ -99,16 +110,12 @@ class RecommendSell(BaseHandle):
         from_price = from_base_price * (from_buy_info.percentage / 100.0)
         to_price = to_base_price * (to_sell_info.percentage / 100.0)
 
-        get = to_price - from_price
-        get_per_km = get / distance
-        from_name = CityData[from_city]["name"]
-        to_name = CityData[to_city]["name"]
-
         income = InCome()
-        income.get = get
-        income.get_per_km = get_per_km
-        income.from_name = from_name
-        income.to_name = to_name
+        income.get = to_price - from_price
+        income.get_all = (to_price - from_price) * num
+        income.distance = distance
+        income.from_name = CityData[from_city]["name"]
+        income.to_name = CityData[to_city]["name"]
         income.from_valid = from_buy_info.GetValidValue()
         income.to_valid = to_sell_info.GetValidValue()
 
