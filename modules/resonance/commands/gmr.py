@@ -77,8 +77,8 @@ class GMR(BaseHandle):
                 info = SellInfos
             else:
                 return "GM 104 参数错误"
-            item_id = int(m.params[2])
-            city_id = int(m.params[3])
+            item_id = m.params[2]
+            city_id = m.params[3]
             if item_id in info.reports and city_id in info.reports[item_id]:
                 info.reports[item_id][city_id].Back()
                 return "撤回成功"
