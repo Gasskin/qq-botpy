@@ -28,11 +28,13 @@ class ReportBuy(BaseHandle):
                 if not item_ids:
                     content = content + f"不存在商品：{params[0]}"
                     continue
-                item_id = r_utils.GetOnlyItemIDWithCityID(item_ids,city_id)
+                item_id = r_utils.GetOnlyItemIDWithCityID(item_ids, city_id)
                 if not item_id:
                     content = content + f"商品：{params[0]} 不属于城市{m.params[0]}"
                     continue
                 percentage = float(params[1])
+                if percentage < 80 or percentage > 130:
+                    continue
                 BuyInfos.Refresh(item_id, city_id, percentage, g_utils.GetCurrentSecondTimeStamp())
             await r_utils.Reply(m, f"上报成功\n{content}")
         except Exception as e:

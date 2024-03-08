@@ -29,6 +29,8 @@ class ReportSell(BaseHandle):
                     content = content + f"不存在商品：{params[0]}"
                     continue
                 percentage = float(params[1])
+                if percentage < 80 or percentage > 130:
+                    continue
                 for i in item_ids:
                     SellInfos.Refresh(i, city_id, percentage, g_utils.GetCurrentSecondTimeStamp())
             await r_utils.Reply(m, f"上报成功\n{content}")
