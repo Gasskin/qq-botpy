@@ -50,7 +50,6 @@ class SearchBuy(BaseHandle):
             online_products = get.json()["data"]
             content = ""
             content = content + self.Check("桦石发财树", online_products, 90)
-            content = content + self.Check("图形加速卡", online_products, 90)
             content = content + self.Check("火澄石", online_products, 90)
             content = content + self.Check("负片炮弹", online_products, 90)
             content = content + self.Check("阿妮塔小型桦树发电机", online_products, 90)
