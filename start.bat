@@ -1,12 +1,9 @@
 @echo off
+cd /d %~dp0
+git pull
+if %ERRORLEVEL% neq 0 (
+    echo Git update failed, start.py will not be run.
+    exit /b %ERRORLEVEL%
+)
 
-
-echo Are you sure you want to discard all local changes? (y/n)
-set /p confirm=
-
-if /i "%confirm%"=="y" (
-    git reset --hard HEAD
-    git pull
-    python entry.py
-) 
-
+python start.py
