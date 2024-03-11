@@ -15,7 +15,7 @@ BuyInfos = ReportInfos()
 
 
 class ReportBuy(BaseHandle):
-    # 城市 商品A.百分比A 商品B.百分比B
+    # 城市 商品A.商品B... 价格A.价格B...
     async def HandleMessage(self, m: MessageInfo):
         try:
             city_ids = r_utils.TryFindCityIDs(m.params[0])
@@ -25,13 +25,14 @@ class ReportBuy(BaseHandle):
                 return await r_utils.Reply(m, f"{m.params[0]} 存在多个匹配项")
             city_id = city_ids[0]
             content = ""
-            for i in range(1, len(m.params)):
-                params = m.params[i].split(".")
-                item_id = r_utils.FindOnlyItemWithCityID(params[0], city_id)
+            items = m.params[1].split(".")
+            price = m.params[2].split(".")
+            for i in range(0, len(items)):
+                item_id = r_utils.FindOnlyItemWithCityID(items[i], city_id)
                 if not item_id:
-                    content = content + f"城市{m.params[0]} 不存在商品：{params[0]}\n"
+                    content = content + f"城市{m.params[0]} 不存在商品：{items[i]}\n"
                     continue
-                percentage = float(params[1])
+                percentage = float(price[i])
                 if percentage < 80 or percentage > 130:
                     _log.warning(f"{m.author_name} {m.command} 输入百分比异常")
                     continue
