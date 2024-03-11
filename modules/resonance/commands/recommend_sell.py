@@ -180,6 +180,9 @@ class RecommendSell(BaseHandle):
             buy_lot = product_info["buyLot"][from_city]
             sell_price = product_info["sellPrices"][to_city]
 
+            if buy_price * buy_info["variation"] > sell_price * sell_info["variation"]:
+                return None
+
             route_info = RouteInfo()
             route_info.product_name = product_name
             route_info.from_city = from_city
@@ -190,6 +193,7 @@ class RecommendSell(BaseHandle):
             route_info.sell_price = sell_price
             route_info.buy_info = buy_info
             route_info.sell_info = sell_info
+
             return route_info
         except:
             return None
