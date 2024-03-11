@@ -4,15 +4,17 @@ from botpy import logging
 from botpy.ext.cog_yaml import read
 from botpy.message import DirectMessage, Message
 
-import modules.resonance
 from modules.message_info import MessageInfo
 from modules import utils as utils
+import asyncio
+import modules.resonance
 
 _log = logging.get_logger()
 
 # 配置
 CONFIG = read(os.path.join(os.path.dirname(__file__), "config.yaml"))
 INTERVAL = ";"
+CHANNEL_1 = "639977366"
 
 Resonance = modules.resonance.Resonance()
 
@@ -27,6 +29,11 @@ class MyClient(botpy.Client):
 
     async def on_ready(self):
         _log.info(f"robot 「{self.robot.name}」 on_ready!")
+        while True:
+            res = Resonance.UpdateCheck()
+            if res:
+                await self.api.post_message(channel_id=CHANNEL_1, content=res)
+            await asyncio.sleep(60)
 
     async def on_at_message_create(self, message: Message):
         _log.info(f"\n发送人：{message.author.username} {message.author.id} {message.timestamp}\n发送内容：{message.content}")

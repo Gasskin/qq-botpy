@@ -8,6 +8,7 @@ from modules.resonance.commands.search_sell import SearchSell
 from modules.resonance.commands.recommend_sell import RecommendSell
 from modules import utils as g_utils
 from botpy import logging
+import asyncio
 
 _log = logging.get_logger()
 
@@ -49,3 +50,10 @@ class Resonance(object):
                 _log.warning(f"{m.author_name} {m.command} 指令发送过于频繁")
                 return
         await self.COMMANDS[m.command].HandleMessage(m)
+
+    def UpdateCheck(self) -> str:
+        for command in self.COMMANDS:
+            res = self.COMMANDS[command].UpdateCheck()
+            if res != None:
+                return res
+        return None

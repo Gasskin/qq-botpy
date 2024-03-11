@@ -145,7 +145,7 @@ class RecommendSell(BaseHandle):
             result.income = self.GetTotalRouteInCome(route_list)
             result.sell_products = ""
             for route in route_list:
-                result.sell_products = result.sell_products + f"{route.product_name}{route.GetSellTrendState()} "
+                result.sell_products = result.sell_products + f"{route.product_name}{route.sell_info['variation']}{route.GetSellTrendState()} "
             out.append(result)
         return out
 
