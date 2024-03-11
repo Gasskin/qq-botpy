@@ -77,6 +77,7 @@ class SearchBuy(BaseHandle):
                 report = f"{city_name} {product_name} {variation} {'↑'if trend=='up' else '↓'}"
                 if report_key not in self.already_report:
                     self.already_report[report_key] = ""
+                    continue
                 if self.already_report[report_key] == report:
                     continue
                 self.already_report[report_key] = report

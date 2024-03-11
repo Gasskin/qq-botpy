@@ -115,7 +115,7 @@ class RecommendSell(BaseHandle):
                 content = "综合推荐：\n"
                 for i in range(0, max):
                     result = all[i]
-                    content = content + f"from {result.from_city} to {result.to_city} with {result.sell_products}\n{result.income}/单\n"
+                    content = content + f"from {result.from_city} to {result.to_city} {result.income}/单\n{result.sell_products}\n"
             else:
                 from_citys = r_utils.FindCityNames(m.params[0])
                 if not from_citys or len(from_citys) > 1:
@@ -125,7 +125,7 @@ class RecommendSell(BaseHandle):
                 route_results = self.GetRouteResult(from_city)
                 route_results.sort(key=lambda x: x.income, reverse=True)
                 for result in route_results:
-                    content = content + f"to {result.to_city} with {result.sell_products}\n{result.income}/单\n"
+                    content = content + f"to {result.to_city} {result.income}/单\n{result.sell_products}\n"
 
             await r_utils.Reply(m, content=content)
         except:
@@ -145,7 +145,7 @@ class RecommendSell(BaseHandle):
             result.income = self.GetTotalRouteInCome(route_list)
             result.sell_products = ""
             for route in route_list:
-                result.sell_products = result.sell_products + f"{route.product_name}{route.sell_info['variation']}{route.GetSellTrendState()} "
+                result.sell_products = result.sell_products + f"{route.product_name}{route.buy_info['variation']}{route.GetBuyTrendState()} --> {route.sell_info['variation']}{route.GetSellTrendState()}\n"
             out.append(result)
         return out
 
