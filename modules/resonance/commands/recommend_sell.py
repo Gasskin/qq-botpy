@@ -2,120 +2,204 @@ from modules import utils as g_utils
 from modules.message_info import MessageInfo
 from modules.base_handle import BaseHandle
 from modules.resonance import utils as r_utils
-from modules.resonance.configs.city import Datas as CityData
-from modules.resonance.configs.items import Datas as ItemData
-from modules.resonance.commands.report_buy import BuyInfos
-from modules.resonance.commands.report_sell import SellInfos
+from modules.resonance.configs.product import Datas as ProductDatas
+from modules.resonance.configs.city import Datas as CityDatas
 from botpy import logging
-
+import requests
 import traceback
 
 _log = logging.get_logger()
 
 
-# 收益
-class InCome(object):
-    get: float  # 每个收入
-    get_all: float  # 每单收入
-    distance: float  # 距离
-    from_name: str  # 购入地名称
-    to_name: str  # 销售地名称
-    from_valid: float  # 购入地信息有效值
-    to_valid: float  # 卖出地信息有效值
+# 销售信息
+class RouteInfo(object):
+    product_name: str
+    from_city: str
+    to_city: str
+    buy_price: float = None
+    buy_lot: float = None
+    sell_price: float = None
+    buy_info = None
+    sell_info = None
 
     def __init__(self) -> None:
+        return
+
+    def GetBuyTrendState(self) -> str:
+        if self.buy_info["trend"] == "up":
+            return "↑"
+        return "↓"
+
+    def GetSellTrendState(self) -> str:
+        if self.sell_info["trend"] == "up":
+            return "↑"
+        return "↓"
+
+
+class RouteResult(object):
+    from_city: str
+    to_city: str
+    income: float
+    sell_products: str
+
+    def __init__(self) -> None:
+        return
+
+    def ToString() -> str:
         pass
 
 
 class RecommendSell(BaseHandle):
-    # 城市 商品A 商品B
+    # 城市名
+    city: list[str]
+    # 商品信息：商品名/商品信息
+    products: dict[str, dict]
+    # 城市特产信息：城市名/商品名
+    city_special_products = dict[str, list[str]]
+    # 当前价格信息
+    #     "发动机": {
+    #         "buy": {
+    #             "修格里城": {
+    #                 "trend": "up",
+    #                 "variation": 110,
+    #                 "time": 1710124604
+    #             }
+    #         },
+    #         "sell": {
+    #             "修格里城": {
+    #                 "trend": "up",
+    #                 "time": 1709575136
+    #            },
+    #             "铁盟哨站": {
+    #                 "trend": "up",
+    #                 "variation": 92,
+    #                 "time": 1710040779
+    #             ......
+    #         }
+    # },
+    online_products = None
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.products = {}
+        self.city_special_products = {}
+        for data in ProductDatas:
+            procudt_name = data["name"]
+            if procudt_name in self.products:
+                _log.error(f"重复的商品名：{procudt_name}")
+                continue
+            self.products[data["name"]] = data
+
+            if data["type"] == "Special":
+                for city_name in data["buyPrices"]:
+                    if city_name not in self.city_special_products:
+                        self.city_special_products[city_name] = []
+                    self.city_special_products[city_name].append(procudt_name)
+
+        self.city = []
+        for key in ProductDatas[0]["sellPrices"]:
+            self.city.append(key)
+
+    # 1.无参数，排序所有城市
+    # 2.城市，推荐特定城市的销售路线
     async def HandleMessage(self, m: MessageInfo):
         try:
-            city_ids = r_utils.TryFindCityIDs(m.params[0])
-            if not city_ids:
-                return await r_utils.Reply(m, f"不存在城市：{m.params[0]}")
-            if len(city_ids) > 1:
-                return await r_utils.Reply(m, f"{m.params[0]} 存在多个匹配项")
-            city_id = city_ids[0]
-            target_items = []
-            for i in range(1, len(m.params)):
-                item_id = r_utils.FindOnlyItemWithCityID(m.params[i], city_id)
-                if not item_id:
-                    return await r_utils.Reply(m, f"商品：{m.params[i]} 不属于城市{m.params[0]}")
-                target_items.append(item_id)
+            get = requests.get("https://www.resonance-columba.com/api/get-prices")
+            self.online_products = get.json()["data"]
+            if m.params[0] == "":
+                all: list[RouteResult] = []
+                for city in self.city:
+                    all = all + self.GetRouteResult(city)
+                all.sort(key=lambda x: x.income, reverse=True)
+                max = 5 if len(all) > 5 else len(all)
+                content = "综合推荐：\n"
+                for i in range(0, max):
+                    result = all[i]
+                    content = content + f"from {result.from_city} to {result.to_city} with {result.sell_products}\n{result.income}/单\n"
+            else:
+                from_citys = r_utils.FindCityNames(m.params[0])
+                if not from_citys or len(from_citys) > 1:
+                    return await r_utils.Reply(m, "城市名称存在多个匹配项")
+                from_city = from_citys[0]
+                content = f"from：{from_city}\n"
+                route_results = self.GetRouteResult(from_city)
+                route_results.sort(key=lambda x: x.income, reverse=True)
+                for result in route_results:
+                    content = content + f"to {result.to_city} with {result.sell_products}\n{result.income}/单\n"
 
-            total_income: "list[list[InCome]]" = []
-            for i in CityData:
-                if i == city_id:
-                    continue
-                income: "list[InCome]" = []
-                for j in target_items:
-                    income.append(self.GetInCome(j, city_id, i))
-                total_income.append(income)
-            name = ""
-            for i in target_items:
-                name = name + ItemData[i]["name"] + " +"
-            total_income.sort(key=self.SrotInCome, reverse=True)
-            return await r_utils.Reply(m, f"{name} {self.GetContent(total_income)}")
-        except Exception as e:
+            await r_utils.Reply(m, content=content)
+        except:
             _log.error(traceback.format_exc())
             await r_utils.Reply(m, "参数错误")
 
-    def SrotInCome(self, income: "list[InCome]") -> float:
-        total = 0
-        for i in income:
-            total = total + i.get
-        return total
+    def GetRouteResult(self, from_city) -> list[RouteResult]:
+        out: list[RouteResult] = []
+        route_infos = self.GetCityRouteInfo(from_city)
+        for to_city in route_infos:
+            route_list = route_infos[to_city]
+            if len(route_list) <= 0:
+                continue
+            result = RouteResult()
+            result.from_city = from_city
+            result.to_city = to_city
+            result.income = self.GetTotalRouteInCome(route_list)
+            result.sell_products = ""
+            for route in route_list:
+                result.sell_products = result.sell_products + f"{route.product_name}{route.GetSellTrendState()} "
+            out.append(result)
+        return out
 
-    def GetContent(self, total_income: "list[list[InCome]]"):
-        content = f"from：{total_income[0][0].from_name}\n"
-        for income in total_income:
-            get = 0
-            valid = 0
-            totoal_valid = 0
-            for j in income:
-                get = get + j.get_all
-                totoal_valid = totoal_valid + 2
-                valid = valid + j.from_valid + j.to_valid
+    def GetCityRouteInfo(self, from_city) -> dict[str, list[RouteInfo]]:
+        special_products = self.city_special_products[from_city]
 
-            true_valid = valid / totoal_valid
-            if true_valid > 0.85:
-                valid_key = "十分有效"
-            elif true_valid > 0.5:
-                valid_key = "大概有效"
-            elif true_valid > 0.25:
-                valid_key = "勉强有效"
-            elif true_valid > 0:
-                valid_key = "几乎无效"
-            else:
-                valid_key = "无效"
-            content = content + f"to：{income[0].to_name} {round(get,2)}/单 ({valid_key})\n"
-        return content
+        all_routes: dict[str, list[RouteInfo]] = {}
+        for to_city in self.city:
+            if to_city == from_city:
+                continue
+            all_routes[to_city] = []
+            for product_name in special_products:
+                if product_name not in self.products:
+                    continue
+                route = self.GetProductRouteInfo(product_name, from_city, to_city)
+                if route != None:
+                    all_routes[to_city].append(route)
+        return all_routes
 
-    def GetInCome(self, item_id: int, from_city: int, to_city: int) -> InCome:
-        # 买入地的购入信息
-        from_buy_info = BuyInfos.GetAndAddDefaultIfNone(item_id, from_city)
-        # 卖出地的销售信息
-        to_sell_info = SellInfos.GetAndAddDefaultIfNone(item_id, to_city)
-        # 基础购入价格/
-        from_base_price = ItemData[item_id]["buy_price"]
-        # 基础售出价格
-        to_base_price = ItemData[item_id]["sell_price"][to_city]
-        # 两地距离
-        distance = CityData[from_city]["distance"][to_city]
-        # 每单数量
-        num = ItemData[item_id]["num"]
+    def GetProductRouteInfo(self, product_name: str, from_city: str, to_city: str):
+        try:
+            now = g_utils.GetCurrentSecondTimeStamp()
+            # 在线信息
+            buy_info = self.online_products[product_name]["buy"][from_city]
+            sell_info = self.online_products[product_name]["sell"][to_city]
+            if now - buy_info["time"] >= 3600 or now - sell_info["time"] >= 3600:
+                return None
 
-        from_price = from_base_price * (from_buy_info.percentage / 100.0)
-        to_price = to_base_price * (to_sell_info.percentage / 100.0)
+            # 本地信息
+            product_info = self.products[product_name]
+            buy_price = product_info["buyPrices"][from_city]
+            buy_lot = product_info["buyLot"][from_city]
+            sell_price = product_info["sellPrices"][to_city]
 
-        income = InCome()
-        income.get = to_price - from_price
-        income.get_all = (to_price - from_price) * num
-        income.distance = distance
-        income.from_name = CityData[from_city]["name"]
-        income.to_name = CityData[to_city]["name"]
-        income.from_valid = from_buy_info.GetValidValue()
-        income.to_valid = to_sell_info.GetValidValue()
+            route_info = RouteInfo()
+            route_info.product_name = product_name
+            route_info.from_city = from_city
+            route_info.to_city = to_city
 
-        return income
+            route_info.buy_price = buy_price
+            route_info.buy_lot = buy_lot
+            route_info.sell_price = sell_price
+            route_info.buy_info = buy_info
+            route_info.sell_info = sell_info
+            return route_info
+        except:
+            return None
+
+    def GetTotalRouteInCome(self, routes: list[RouteInfo]):
+        buy = 0
+        income = 0
+        for route in routes:
+            buy_variation = route.buy_info["variation"] / 100.0
+            sell_variation = route.sell_info["variation"] / 100.0
+            buy = buy + route.buy_price * buy_variation * route.buy_lot
+            income = income + route.sell_price * sell_variation * route.buy_lot
+        return round(income - buy, 1)

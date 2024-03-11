@@ -3,9 +3,8 @@ from botpy.message import Message
 from modules.message_info import MessageInfo
 from modules.base_handle import BaseHandle
 from modules.resonance.commands.gmr import GMR
-from modules.resonance.commands.report_buy import ReportBuy
-from modules.resonance.commands.report_sell import ReportSell
 from modules.resonance.commands.search_buy import SearchBuy
+from modules.resonance.commands.search_sell import SearchSell
 from modules.resonance.commands.recommend_sell import RecommendSell
 from modules import utils as g_utils
 from botpy import logging
@@ -16,18 +15,16 @@ _log = logging.get_logger()
 class Resonance(object):
     COMMANDS: "dict[str, BaseHandle]" = {
         "/GMR": GMR(),
-        "/ReportBuy": ReportBuy(),
         "/SearchBuy": SearchBuy(),
-        "/ReportSell": ReportSell(),
+        "/SearchSell": SearchSell(),
         "/RecommendSell": RecommendSell(),
     }
 
     TIME_LIMIE: "dict[str, float]" = {
         "/GMR": 0,
-        "/ReportBuy": 5,
         "/SearchBuy": 5,
-        "/ReportSell": 5,
-        "/RecommendSell": 10,
+        "/SearchSell": 5,
+        "/RecommendSell": 5,
     }
 
     WHITE_ID: dict[str, bool] = {"9631977870258360057": True, "0": False}

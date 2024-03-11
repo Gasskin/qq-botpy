@@ -11,7 +11,7 @@ import traceback
 _log = logging.get_logger()
 
 
-class SearchBuy(BaseHandle):
+class SearchSell(BaseHandle):
     # 城市
     async def HandleMessage(self, m: MessageInfo):
         try:
@@ -27,14 +27,14 @@ class SearchBuy(BaseHandle):
             now = g_utils.GetCurrentSecondTimeStamp()
             for product_name in online_products:
                 product = online_products[product_name]
-                if "buy" not in product:
+                if "sell" not in product:
                     continue
-                if city_name not in product["buy"]:
+                if city_name not in product["sell"]:
                     continue
-                if now - product["buy"][city_name]["time"] >= 3600:
+                if now - product["sell"][city_name]["time"] >= 3600:
                     continue
-                variation = product["buy"][city_name]["variation"]
-                trend = "↑" if product["buy"][city_name]["trend"] == "up" else "↓"
+                variation = product["sell"][city_name]["variation"]
+                trend = "↑" if product["sell"][city_name]["trend"] == "up" else "↓"
                 content = content + f"{product_name} {variation} {trend}\n"
             await r_utils.Reply(m, content)
         except:

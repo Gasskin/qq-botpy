@@ -20,10 +20,9 @@ Resonance = modules.resonance.Resonance()
 class MyClient(botpy.Client):
     REPLY = {
         "/GMR": "连接机器人成功",
-        "/ReportBuy": "上报成功！",
-        "/SearchBuy": "没有查到相关信息~",
-        "/ReportSell": "上报成功！",
-        "/RecommendSell": "暂时没有路线推荐~",
+        "/SearchBuy": "没有查到相关买入信息",
+        "/SearchSell": "没有查到相关销售信息",
+        "/RecommendSell": "暂时没有商品推荐",
     }
 
     async def on_ready(self):
@@ -39,18 +38,6 @@ class MyClient(botpy.Client):
         message.content = message.content.replace(INTERVAL, "")
         message_info = MessageInfo()
         message_info.InitWithMessage(message)
-
-        if Resonance.FilterMeesage(message_info):
-            return await Resonance.HandleMessage(message_info)
-        return await message.reply(content="没有能够执行该命令的模块")
-
-    async def on_direct_message_create(self, message: DirectMessage):
-        _log.info(f"\n[私聊]发送人：{message.author.username} {message.author.id}\n发送内容：{message.content}")
-        if not message.content.endswith(INTERVAL):
-            return await message.reply(content="测试连接成功")
-        message.content = "empty " + message.content.replace(INTERVAL, "")
-        message_info = MessageInfo()
-        message_info.InitWithDirectMessage(message)
 
         if Resonance.FilterMeesage(message_info):
             return await Resonance.HandleMessage(message_info)
