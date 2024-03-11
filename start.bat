@@ -6,4 +6,5 @@ if %ERRORLEVEL% neq 0 (
     exit /b %ERRORLEVEL%
 )
 
+del /f /q botpy.log
 python start.py
