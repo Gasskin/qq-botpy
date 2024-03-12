@@ -1,0 +1,11 @@
+APPID_1 = "102095389"
+SECRET_1 = "0iQ8qYGziRAtcL4oYI2mWG1mXI3oZL7t"
+
+APPID_2 = "102095389"
+SECRET_2 = "0iQ8qYGziRAtcL4oYI2mWG1mXI3oZL7t"
+
+INTERVAL = ";"
+CHANNEL_1 = "639977366"
+
+PROXY = {"https": "https://127.0.0.1:10809", "http": "http://127.0.0.1:10809"}
+# PROXY = None

@@ -1,20 +1,15 @@
-import os
 import botpy
 from botpy import logging
 from botpy.ext.cog_yaml import read
-from botpy.message import DirectMessage, Message
+from botpy.message import Message
 
 from modules.message_info import MessageInfo
 from modules import utils as utils
 import asyncio
 import modules.resonance
+from modules import global_config as G_Config
 
 _log = logging.get_logger()
-
-# 配置
-CONFIG = read(os.path.join(os.path.dirname(__file__), "config.yaml"))
-INTERVAL = ";"
-CHANNEL_1 = "639977366"
 
 Resonance = modules.resonance.Resonance()
 
@@ -32,17 +27,17 @@ class MyClient(botpy.Client):
         while True:
             res = Resonance.UpdateCheck()
             if res:
-                await self.api.post_message(channel_id=CHANNEL_1, content=res)
+                await self.api.post_message(channel_id=G_Config.CHANNEL_1, content=res)
             await asyncio.sleep(60)
 
     async def on_at_message_create(self, message: Message):
         _log.info(f"\n发送人：{message.author.username} {message.author.id} {message.timestamp}\n发送内容：{message.content}")
-        if not message.content.endswith(INTERVAL):
+        if not message.content.endswith(G_Config.INTERVAL):
             for key in self.REPLY:
                 if key in message.content:
                     return await message.reply(content=f"{self.REPLY[key]}")
             return await message.reply(content="你好！")
-        message.content = message.content.replace(INTERVAL, "")
+        message.content = message.content.replace(G_Config.INTERVAL, "")
         message_info = MessageInfo()
         message_info.InitWithMessage(message)
 
@@ -52,12 +47,7 @@ class MyClient(botpy.Client):
 
 
 if __name__ == "__main__":
-    # 通过预设置的类型，设置需要监听的事件通道
-    # intents = botpy.Intents.none()
-    # intents.public_guild_messages=True
-
-    # 通过kwargs，设置需要监听的事件通道
     bot_index = "1"
     intents = botpy.Intents(direct_message=True, public_guild_messages=True)
     client = MyClient(intents=intents)
-    client.run(appid=CONFIG["appid" + bot_index], secret=CONFIG["secret" + bot_index])
+    client.run(appid=getattr(G_Config, "APPID_" + bot_index), secret=getattr(G_Config, "SECRET_" + bot_index))
