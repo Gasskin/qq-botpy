@@ -12,7 +12,7 @@ _log = logging.get_logger()
 
 
 # 销售信息
-class RouteInfo(object):
+class SellProductInfo(object):
     product_name: str
     from_city: str
     to_city: str
@@ -132,6 +132,7 @@ class RecommendSell(BaseHandle):
             _log.error(traceback.format_exc())
             await r_utils.Reply(m, "参数错误")
 
+    # 计算从from_city到其他所有城市的路线收益
     def GetRouteResult(self, from_city) -> list[RouteResult]:
         out: list[RouteResult] = []
         route_infos = self.GetCityRouteInfo(from_city)
@@ -149,10 +150,12 @@ class RecommendSell(BaseHandle):
             out.append(result)
         return out
 
-    def GetCityRouteInfo(self, from_city) -> dict[str, list[RouteInfo]]:
+    # 计算从from_city到其他所有城市的特殊商品销售信息
+    # 修格里城->淘金乐园[发动机，弹丸加速装置]
+    def GetCityRouteInfo(self, from_city) -> dict[str, list[SellProductInfo]]:
         special_products = self.city_special_products[from_city]
 
-        all_routes: dict[str, list[RouteInfo]] = {}
+        all_routes: dict[str, list[SellProductInfo]] = {}
         for to_city in self.city:
             if to_city == from_city:
                 continue
@@ -160,12 +163,12 @@ class RecommendSell(BaseHandle):
             for product_name in special_products:
                 if product_name not in self.products:
                     continue
-                route = self.GetProductRouteInfo(product_name, from_city, to_city)
-                if route != None:
-                    all_routes[to_city].append(route)
+                product_info = self.GetSellProductInfo(product_name, from_city, to_city)
+                if product_info != None:
+                    all_routes[to_city].append(product_info)
         return all_routes
 
-    def GetProductRouteInfo(self, product_name: str, from_city: str, to_city: str):
+    def GetSellProductInfo(self, product_name: str, from_city: str, to_city: str):
         try:
             now = g_utils.GetCurrentSecondTimeStamp()
             # 在线信息
@@ -183,7 +186,7 @@ class RecommendSell(BaseHandle):
             if buy_price * buy_info["variation"] > sell_price * sell_info["variation"]:
                 return None
 
-            route_info = RouteInfo()
+            route_info = SellProductInfo()
             route_info.product_name = product_name
             route_info.from_city = from_city
             route_info.to_city = to_city
@@ -198,12 +201,12 @@ class RecommendSell(BaseHandle):
         except:
             return None
 
-    def GetTotalRouteInCome(self, routes: list[RouteInfo]):
+    def GetTotalRouteInCome(self, sell_products: list[SellProductInfo]):
         buy = 0
         income = 0
-        for route in routes:
-            buy_variation = route.buy_info["variation"] / 100.0
-            sell_variation = route.sell_info["variation"] / 100.0
-            buy = buy + route.buy_price * buy_variation * route.buy_lot
-            income = income + route.sell_price * sell_variation * route.buy_lot
+        for product_info in sell_products:
+            buy_variation = product_info.buy_info["variation"] / 100.0
+            sell_variation = product_info.sell_info["variation"] / 100.0
+            buy = buy + product_info.buy_price * buy_variation * product_info.buy_lot
+            income = income + product_info.sell_price * sell_variation * product_info.buy_lot
         return round(income - buy, 1)
