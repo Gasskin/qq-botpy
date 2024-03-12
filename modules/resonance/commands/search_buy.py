@@ -61,7 +61,7 @@ class SearchBuy(BaseHandle):
 
             content = content + self.Check("沙金", online_products, 85)
 
-            _log.info(f"检索关键低价商品：{content}")
+            _log.info(f"检索低价购入商品：\n{content}")
             if content == "":
                 return None
             content = f"@全体成员：买入Timing!\n\n{content}"
