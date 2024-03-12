@@ -11,6 +11,6 @@ if %ERRORLEVEL% neq 0 (
 )
 
 
-taskkill /f /im python.exe
+
 del /f /q botpy.log
 python start.py
