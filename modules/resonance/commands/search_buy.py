@@ -53,6 +53,14 @@ class SearchBuy(BaseHandle):
             content = content + self.Check("火澄石", online_products, 90)
             content = content + self.Check("负片炮弹", online_products, 90)
             content = content + self.Check("阿妮塔小型桦树发电机", online_products, 90)
+            content = content + self.Check("发动机", online_products, 90)
+            content = content + self.Check("游戏机", online_products, 90)
+            content = content + self.Check("阿妮塔202军用无人机", online_products, 90)
+            content = content + self.Check("石墨烯电池", online_products, 90)
+            content = content + self.Check("图形加速卡", online_products, 90)
+
+            content = content + self.Check("沙金", online_products, 85)
+
             _log.info(f"检索关键低价商品：{content}")
             if content == "":
                 return None
