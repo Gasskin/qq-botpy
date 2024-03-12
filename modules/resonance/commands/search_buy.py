@@ -53,7 +53,7 @@ class SearchBuy(BaseHandle):
             content = content + self.Check("火澄石", online_products, 90)
             content = content + self.Check("负片炮弹", online_products, 90)
             content = content + self.Check("阿妮塔小型桦树发电机", online_products, 90)
-
+            _log.info(f"检索关键低价商品：{content}")
             if content == "":
                 return None
             content = f"@全体成员：买入Timing!\n\n{content}"
