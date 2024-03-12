@@ -56,7 +56,7 @@ class SearchBuy(BaseHandle):
 
             if content == "":
                 return None
-            content = f"@全体成员\n\n{content}"
+            content = f"@全体成员：买入Timing!\n\n{content}"
             return content
         except:
             _log.error(traceback.format_exc())
