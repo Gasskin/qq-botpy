@@ -108,7 +108,7 @@ class RecommendSell(BaseHandle):
                 all.sort(key=lambda x: x.income, reverse=True)
                 max = 3 if len(all) > 3 else len(all)
                 max_income = all[0].income
-                content = "最佳推荐：\n"
+                content = f"最佳推荐：{max_income}/单\n"
                 for i in range(0, max):
                     result = all[i]
                     content = content + f"from {result.from_city} to {result.to_city} ({round(result.income/max_income*100,1)}%)\n{result.description}\n"
