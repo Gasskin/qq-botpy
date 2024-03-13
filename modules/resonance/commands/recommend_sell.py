@@ -107,19 +107,22 @@ class RecommendSell(BaseHandle):
                     all = all + self.GetRouteResult(city)
                 all.sort(key=lambda x: x.income, reverse=True)
                 max = 3 if len(all) > 3 else len(all)
+                max_income = all[0].income
                 content = "最佳推荐：\n"
                 for i in range(0, max):
-                    content = content + f"from {all[i].from_city} to {all[i].to_city} {round(all[i].income,1)}/单\n{all[i].description}\n"
+                    result = all[i]
+                    content = content + f"from {result.from_city} to {result.to_city} ({round(result.income/max_income*100,1)}%)\n{result.description}\n"
             else:
                 from_citys = r_utils.FindCityNames(m.params[0])
                 if not from_citys or len(from_citys) > 1:
                     return await r_utils.Reply(m, "城市名称存在多个匹配项")
                 from_city = from_citys[0]
-                content = f"from：{from_city}\n"
                 route_results = self.GetRouteResult(from_city)
                 route_results.sort(key=lambda x: x.income, reverse=True)
+                max_income = route_results[0].income
+                content = f"from：{from_city}\n"
                 for result in route_results:
-                    content = content + f"to {result.to_city} {round(result.income,1)}/单\n{result.description}\n"
+                    content = content + f"to {result.to_city} ({round(result.income/max_income*100,1)}%)\n{result.description}\n"
 
             await r_utils.Reply(m, content=content)
         except:
