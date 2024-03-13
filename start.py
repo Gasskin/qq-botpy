@@ -24,11 +24,11 @@ class MyClient(botpy.Client):
 
     async def on_ready(self):
         _log.info(f"robot 「{self.robot.name}」 on_ready!")
-        while True:
-            res = Resonance.UpdateCheck()
-            if res:
-                await self.api.post_message(channel_id=G_Config.CHANNEL_1, content=res)
-            await asyncio.sleep(60)
+        # while True:
+        #     res = Resonance.UpdateCheck()
+        #     if res:
+        #         await self.api.post_message(channel_id=G_Config.CHANNEL_2, content=res)
+        #     await asyncio.sleep(60)
 
     async def on_at_message_create(self, message: Message):
         _log.info(f"\n发送人：{message.author.username} {message.author.id} {message.timestamp}\n发送内容：{message.content}")
