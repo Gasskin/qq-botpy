@@ -99,7 +99,8 @@ class RecommendSell(BaseHandle):
     # 2.城市，推荐特定城市的销售路线
     async def HandleMessage(self, m: MessageInfo):
         try:
-            get = requests.get(G_Config.GET_PRICE_V2)
+            proxy = G_Config.PROXY
+            get = requests.get(G_Config.GET_PRICE_V2, proxies=proxy)
             self.online_products = get.json()["data"]
             if m.params[0] == "":
                 all: list[RouteResult] = []
@@ -108,7 +109,7 @@ class RecommendSell(BaseHandle):
                 all.sort(key=lambda x: x.income, reverse=True)
                 max = 3 if len(all) > 3 else len(all)
                 max_income = all[0].income
-                content = f"最佳推荐：{max_income}/单\n"
+                content = f"最佳推荐：{round(max_income,1)}/单\n"
                 for i in range(0, max):
                     result = all[i]
                     content = content + f"from {result.from_city} to {result.to_city} ({round(result.income/max_income*100,1)}%)\n{result.description}\n"

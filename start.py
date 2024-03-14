@@ -5,7 +5,7 @@ from botpy.message import Message
 
 from modules.message_info import MessageInfo
 from modules import utils as utils
-import asyncio
+import sys
 import modules.resonance
 from modules import global_config as G_Config
 
@@ -48,6 +48,8 @@ class MyClient(botpy.Client):
 
 if __name__ == "__main__":
     bot_index = "1"
+    use_proxy = True
+
     intents = botpy.Intents(direct_message=True, public_guild_messages=True)
     client = MyClient(intents=intents)
-    client.run(appid=getattr(G_Config, "APPID_" + bot_index), secret=getattr(G_Config, "SECRET_" + bot_index))
+    client.run(appid=G_Config.APPID, secret=G_Config.SECRET)
